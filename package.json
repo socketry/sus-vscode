@@ -3,7 +3,7 @@
 	"displayName": "sus-vscode",
 	"description": "Sample showing how to use the test APIs",
 	"version": "0.0.1",
-	"publisher": "Samuel Williams",
+	"publisher": "socketry",
 	"private": true,
 	"license": "MIT",
 	"repository": "https://github.com/ioquatix/sus-vscode",
