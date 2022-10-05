@@ -7,9 +7,6 @@
 	"private": true,
 	"license": "MIT",
 	"repository": "https://github.com/ioquatix/sus-vscode",
-	"enabledApiProposals": [
-		"testCoverage"
-	],
 	"engines": {
 		"vscode": "^1.68.0"
 	},
