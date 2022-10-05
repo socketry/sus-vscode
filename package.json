@@ -1,12 +1,12 @@
 {
-	"name": "test-provider-sample",
-	"displayName": "test-provider-sample",
+	"name": "sus-vscode",
+	"displayName": "sus-vscode",
 	"description": "Sample showing how to use the test APIs",
 	"version": "0.0.1",
-	"publisher": "vscode-samples",
+	"publisher": "Samuel Williams",
 	"private": true,
 	"license": "MIT",
-	"repository": "https://github.com/Microsoft/vscode-extension-samples",
+	"repository": "https://github.com/ioquatix/sus-vscode",
 	"enabledApiProposals": [
 		"testCoverage"
 	],
@@ -17,7 +17,8 @@
 		"Other"
 	],
 	"activationEvents": [
-		"workspaceContains:*.md"
+		"workspaceContains:config/sus.rb",
+		"workspaceContains:test/**/*.rb"
 	],
 	"main": "./out/extension.js",
 	"scripts": {
@@ -28,7 +29,11 @@
 		"download-api": "vscode-dts main && vscode-dts dev",
 		"postinstall": "npm run download-api"
 	},
+	"dependencies": {
+		"ndjson": "^2.0.0"
+	},
 	"devDependencies": {
+		"@types/ndjson": "^2.0.1",
 		"@types/node": "^16.11.7",
 		"@typescript-eslint/eslint-plugin": "^5.30.0",
 		"@typescript-eslint/parser": "^5.30.0",

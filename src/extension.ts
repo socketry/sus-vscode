@@ -1,58 +1,46 @@
+import { normalize } from 'path';
 import * as vscode from 'vscode';
-import {loadTreeFromRoot, Node} from 'sus'
+import {Project} from './sus';
 
 export async function activate(context: vscode.ExtensionContext) {
-	const controller = vscode.tests.createTestController('susTestController', 'Sus Tests');
-	context.subscriptions.push(controller);
+	const projects = {} as {[key: string]: Project};
 	
-	async function getWorkspaceTrees() {
+	async function addProject(workspaceFolder: vscode.WorkspaceFolder) {
+		const identifier = workspaceFolder.uri.toString();
+		const project = projects[identifier];
+		if (!project) {
+			const controller = vscode.tests.createTestController(identifier, workspaceFolder.name);
+			const project = new Project(workspaceFolder, controller);
+			context.subscriptions.push(project);
+			projects[identifier] = project;
+			
+			await project.setup();
+		}
+	}
+	
+	function removeProject(workspaceFolder: vscode.WorkspaceFolder) {
+		const identifier = workspaceFolder.uri.toString();
+		const project = projects[identifier];
+		if (project) {
+			project.dispose();
+			delete projects[identifier];
+		}
+	}
+	
+	function updateProjects(event: vscode.WorkspaceFoldersChangeEvent) {
 		if (!vscode.workspace.workspaceFolders) {
 			return [];
 		}
 		
-		return vscode.workspace.workspaceFolders.map(workspaceFolder => ({
-			workspaceFolder,
-			tree: await loadTreeFromRoot(workspaceFolder.uri.fsPath),
-		}));
+		event.removed.forEach(removeProject);
+		event.added.forEach(addProject);
+		
+		return null;
 	}
 	
-	async function updateTree(controller: vscode.TestController, workspaceFolder: vscode.WorkspaceFolder, tree: Node) {
-		const root = controller.createTestItem('root', 'root', workspaceFolder.uri);
-		root.children = [];
-		controller.items.add(root);
-		
-		function addNode(node: Node, parent: vscode.TestItem) {
-			const item = controller.createTestItem(node.identity, node.description, workspaceFolder.uri);
-			parent.children.push(item);
-			for (const child of node.children) {
-				addNode(child, item);
-			}
-		}
-		
-		for (const child of tree.children) {
-			addNode(child, root);
-		}
-	}
+	vscode.workspace.onDidChangeWorkspaceFolders(updateProjects);
 	
-	async function startWatchingWorkspace(controller: vscode.TestController) {
-		const workspaceTrees = await getWorkspaceTrees();
-		
-		return workspaceTrees.map(({workspaceFolder, tree}) => {
-			const pattern = new vscode.RelativePattern(workspaceFolder, '**/*');
-			const watcher = vscode.workspace.createFileSystemWatcher(pattern);
-		
-			// watcher.onDidCreate(uri => getOrCreateFile(controller, uri));
-			// watcher.onDidChange(uri => {
-			// 	const { file, data } = getOrCreateFile(controller, uri);
-			// 	if (data.didResolve) {
-			// 		data.updateFromDisk(controller, file);
-			// 	}
-			// });
-			// watcher.onDidDelete(uri => controller.items.delete(uri.toString()));
-		
-			updateTree(controller, workspaceFolder, tree);
-		
-			return watcher;
-		});
+	if (vscode.workspace.workspaceFolders) {
+		vscode.workspace.workspaceFolders.forEach(addProject);
 	}
 }
