@@ -1,8 +1,8 @@
 {
 	"name": "sus-vscode",
-	"displayName": "sus-vscode",
-	"description": "Sample showing how to use the test APIs",
-	"version": "0.0.1",
+	"displayName": "Sus Test Provider",
+	"description": "Ruby sus gem test provider.",
+	"version": "0.0.2",
 	"publisher": "socketry",
 	"private": true,
 	"license": "MIT",
@@ -11,7 +11,7 @@
 		"vscode": "^1.68.0"
 	},
 	"categories": [
-		"Other"
+		"Testing"
 	],
 	"activationEvents": [
 		"workspaceContains:config/sus.rb",
