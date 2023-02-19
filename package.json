@@ -2,13 +2,16 @@
 	"name": "sus-vscode",
 	"displayName": "Sus Test Provider",
 	"description": "Ruby sus gem test provider.",
-	"version": "0.0.2",
+	"version": "0.1.0",
 	"publisher": "socketry",
-	"private": true,
 	"license": "MIT",
 	"repository": "https://github.com/ioquatix/sus-vscode",
+	"enabledApiProposals": [
+		"testCoverage",
+		"testContinuousRun"
+	],
 	"engines": {
-		"vscode": "^1.68.0"
+		"vscode": "^1.75.0"
 	},
 	"categories": [
 		"Testing"
@@ -21,21 +24,21 @@
 	"scripts": {
 		"vscode:prepublish": "npm run compile",
 		"compile": "tsc -p ./",
-		"lint": "eslint . --ext .ts,.tsx",
+		"lint": "eslint \"src/**/*.ts\"",
 		"watch": "tsc -watch -p ./",
 		"download-api": "vscode-dts main && vscode-dts dev",
 		"postinstall": "npm run download-api"
 	},
-	"dependencies": {
-		"ndjson": "^2.0.0"
-	},
 	"devDependencies": {
 		"@types/ndjson": "^2.0.1",
 		"@types/node": "^16.11.7",
-		"@typescript-eslint/eslint-plugin": "^5.30.0",
-		"@typescript-eslint/parser": "^5.30.0",
-		"eslint": "^8.13.0",
-		"typescript": "^4.8.4",
+		"@typescript-eslint/eslint-plugin": "^5.42.0",
+		"@typescript-eslint/parser": "^5.42.0",
+		"eslint": "^8.26.0",
+		"typescript": "^4.9.4",
 		"vscode-dts": "^0.3.3"
+	},
+	"dependencies": {
+		"ndjson": "^2.0.0"
 	}
 }
