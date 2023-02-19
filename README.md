@@ -1,4 +1,4 @@
-# Sus VSCode Extension
+# Sus VSCode Test Provider
 
 Experimental extension for showing tests in VSCode.
 
