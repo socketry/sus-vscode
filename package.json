@@ -6,10 +6,6 @@
 	"publisher": "socketry",
 	"license": "MIT",
 	"repository": "https://github.com/ioquatix/sus-vscode",
-	"enabledApiProposals": [
-		"testCoverage",
-		"testContinuousRun"
-	],
 	"engines": {
 		"vscode": "^1.75.0"
 	},
