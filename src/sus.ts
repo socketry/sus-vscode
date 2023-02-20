@@ -301,11 +301,49 @@ export class Runner implements vscode.Disposable, vscode.TestCoverageProvider {
 		return this.coverage;
 	}
 
-	messageFor(data: any) {
-		if (data.expected && data.actual) {
-			return vscode.TestMessage.diff(data.message, data.expected, data.actual);
+	messageBodyFor(data: any) {
+		if (data.text) {
+			return data.text;
+		}
+		// else if (data.markdownBody) {
+		// 	return new vscode.MarkdownString(data.markdownBody);
+		// }
+	}
+
+	messageFor(data: any) : vscode.TestMessage {
+		// This is a legacy format, we can drop this eventually:
+		if (typeof data === 'string') {
+			return new vscode.TestMessage(data);
+		}
+
+		const body = this.messageBodyFor(data);
+
+		let message = null;
+
+		if (data.actual && data.expected) {
+			message = vscode.TestMessage.diff(body, data.actual, data.expected);
 		} else {
-			return new vscode.TestMessage(data.message);
+			message = new vscode.TestMessage(body);
+		}
+
+		if (data.location) {
+			message.location = new vscode.Location(
+				vscode.Uri.file(data.location.path),
+				new vscode.Position(data.location.line - 1, data.location.column || 0)
+			);
+		}
+
+		return message;
+	}
+
+	messagesFor(data: any) : vscode.TestMessage | vscode.TestMessage[] {
+		if (data.message) {
+			return this.messageFor(data);
+		}
+		else if (data.messages) {
+			return data.messages.map(this.messageFor.bind(this));
+		} else {
+			return [];
 		}
 	}
 
@@ -346,10 +384,10 @@ export class Runner implements vscode.Disposable, vscode.TestCoverageProvider {
 			this.testRun.passed(this.popTest(data.passed), data.duration);
 		}
 		else if (data.failed) {
-			this.testRun.failed(this.popTest(data.failed), this.messageFor(data), data.duration);
+			this.testRun.failed(this.popTest(data.failed), this.messagesFor(data), data.duration);
 		}
 		else if (data.errored) {
-			this.testRun.errored(this.popTest(data.errored), this.messageFor(data), data.duration);
+			this.testRun.errored(this.popTest(data.errored), this.messagesFor(data), data.duration);
 		}
 		else if (data.finished) {
 			this.appendOutput(data.message);
