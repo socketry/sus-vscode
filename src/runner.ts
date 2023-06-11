@@ -80,6 +80,15 @@ export class Runner implements vscode.Disposable, vscode.TestCoverageProvider {
 		// }
 	}
 
+	locationFor(data: any) : vscode.Location | undefined {
+		if (data.location) {
+			return new vscode.Location(
+				vscode.Uri.file(data.location.path),
+				new vscode.Position(data.location.line - 1, data.location.column || 0)
+			);
+		}
+	}
+
 	messageFor(data: any) : vscode.TestMessage {
 		// This is a legacy format, we can drop this eventually:
 		if (typeof data === 'string') {
@@ -96,12 +105,7 @@ export class Runner implements vscode.Disposable, vscode.TestCoverageProvider {
 			message = new vscode.TestMessage(body);
 		}
 
-		if (data.location) {
-			message.location = new vscode.Location(
-				vscode.Uri.file(data.location.path),
-				new vscode.Position(data.location.line - 1, data.location.column || 0)
-			);
-		}
+		message.location = this.locationFor(data);
 
 		return message;
 	}
@@ -149,6 +153,10 @@ export class Runner implements vscode.Disposable, vscode.TestCoverageProvider {
 	onData(data: any) {
 		if (data.started) {
 			this.testRun.started(this.tests[data.started]);
+		}
+		else if (data.inform) {
+			const test = this.tests[data.identity];
+			this.testRun.appendOutput(data.inform, this.locationFor(data), test);
 		}
 		else if (data.passed) {
 			this.testRun.passed(this.popTest(data.passed), data.duration);

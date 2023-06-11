@@ -1,0 +1,3 @@
+[submodule "sus"]
+	path = sus
+	url = https://github.com/ioquatix/sus
