@@ -1,3 +1,6 @@
+// Released under the MIT License.
+// Copyright, 2023, by Samuel Williams.
+
 import * as vscode from 'vscode';
 
 import {Tree, Node, loadTreeFromPath} from './tree';
@@ -39,29 +42,29 @@ class RunRequest {
 		const testRun = controller.createTestRun(this.request, identifier, true);
 		const items = this.request.include ?? controller.items;
 		const tests: Tests = {};
-
+		
 		function add(items: readonly vscode.TestItem[] | vscode.TestItemCollection) {
 			items.forEach(item => {
 				if (item.children.size > 0) add(item.children);
 				else tests[item.id] = item;
 			});
 		}
-
+		
 		add(items);
-
+		
 		function remove(items: readonly vscode.TestItem[] | vscode.TestItemCollection) {
 			items.forEach(item => {
 				delete tests[item.id];
 				if (item.children) remove(item.children);
 			});
 		}
-
+		
 		if (this.request.exclude) {
 			remove(this.request.exclude);
 		}
-
+		
 		const runner = new Runner(testRun, this.workspaceFolder, tests, this.cancellationToken);
-
+		
 		try {
 			await runner.run();
 		} finally {
@@ -76,63 +79,63 @@ export class Project implements vscode.Disposable {
 	
 	watcher: vscode.FileSystemWatcher | undefined;
 	runRequests: Set<RunRequest> = new Set();
-
+	
 	constructor(workspaceFolder: vscode.WorkspaceFolder, controller: vscode.TestController) {
 		this.workspaceFolder = workspaceFolder;
 		this.controller = controller;
 	}
-
+	
 	dispose() {
 		this.controller.dispose();
 		this.watcher?.dispose();
 	}
-
+	
 	addNodes(nodes: Node[], parent: vscode.TestItemCollection) {
 		const stale: Set<string> = new Set();
 		parent.forEach(item => stale.add(item.id));
-
+		
 		for (const node of nodes) {
 			let testItem = parent.get(node.identity);
-
+			
 			if (!testItem || testItem.description !== node.description) {
 				testItem = this.addNode(node, parent);
 			}
-
+			
 			stale.delete(testItem.id);
-
+			
 			this.addNodes(node.children, testItem.children);
 		}
-
+		
 		// Remove stale test items:
 		for (const id of stale) {
 			parent.delete(id);
 		}
 	}
-
+	
 	addNode(node: Node, parent: vscode.TestItemCollection) {
 		const parts = node.identity.split(':');
 		const uri = vscode.Uri.joinPath(this.workspaceFolder.uri, parts[0]);
 		const item = this.controller.createTestItem(node.identity, node.description, uri);
-
+		
 		if (parts.length > 1) {
 			const lineNumber = parseInt(parts[parts.length - 1]);
-
+			
 			item.range = new vscode.Range(
 				new vscode.Position(lineNumber - 1, 0),
 				new vscode.Position(lineNumber, 0)
 			);
 		}
-
+		
 		parent.add(item);
-
+		
 		return item;
 	}
-
+	
 	async updateTree(tree: Tree) {
 		// Don't add the root node as it's basically a place-holder.
 		this.addNodes(tree.root.children, this.controller.items);
 	}
-
+	
 	async loadTree() {
 		const tree = await loadTreeFromPath(this.workspaceFolder.uri.fsPath);
 		
@@ -143,18 +146,18 @@ export class Project implements vscode.Disposable {
 			runRequest.treeUpdated.fire(tree);
 		}
 	}
-
+	
 	prepareWatcher() {
 		const pattern = new vscode.RelativePattern(this.workspaceFolder, '**/*.rb');
 		const watcher = vscode.workspace.createFileSystemWatcher(pattern);
-
+		
 		watcher.onDidCreate(uri => this.loadTree());
 		watcher.onDidChange(uri => this.loadTree());
 		watcher.onDidDelete(uri => this.loadTree());
-
+		
 		return watcher;
 	}
-
+	
 	async runHandler(request: vscode.TestRunRequest, token: vscode.CancellationToken) {
 		const runRequest = new RunRequest(this.workspaceFolder, request, token);
 		const identifier = this.workspaceFolder.uri.toString();
@@ -167,16 +170,16 @@ export class Project implements vscode.Disposable {
 			this.runRequests.delete(runRequest);
 		}
 	}
-
+	
 	resolveTree(test: vscode.TestItem | undefined) {
 		this.loadTree();
 	}
-
+	
 	async setup() {
 		await this.loadTree();
 		this.watcher = this.prepareWatcher();
 		
-		this.controller.refreshHandler = this.loadTree.bind(this, true);
+		this.controller.refreshHandler = this.loadTree.bind(this);
 		this.controller.resolveHandler = this.resolveTree.bind(this);
 		
 		this.controller.createRunProfile('Run', vscode.TestRunProfileKind.Run, this.runHandler.bind(this), true, undefined, true);

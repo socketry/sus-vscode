@@ -1,4 +1,6 @@
-import { normalize } from 'path';
+// Released under the MIT License.
+// Copyright, 2023, by Samuel Williams.
+
 import * as vscode from 'vscode';
 import {Project} from './sus';
 
