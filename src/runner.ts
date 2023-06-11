@@ -93,11 +93,6 @@ export class Runner implements vscode.Disposable, vscode.TestCoverageProvider {
 	}
 	
 	messageFor(data: any) : vscode.TestMessage {
-		// This is a legacy format, we can drop this eventually:
-		if (typeof data === 'string') {
-			return new vscode.TestMessage(data);
-		}
-		
 		const body = this.messageBodyFor(data);
 		
 		let message = null;
@@ -113,9 +108,9 @@ export class Runner implements vscode.Disposable, vscode.TestCoverageProvider {
 		return message;
 	}
 	
-	messagesFor(data: any) : vscode.TestMessage | vscode.TestMessage[] {
+	messagesFor(data: any) : vscode.TestMessage[] {
 		if (data.message) {
-			return this.messageFor(data);
+			return [this.messageFor(data.message)];
 		}
 		else if (data.messages) {
 			return data.messages.map(this.messageFor.bind(this));
@@ -153,13 +148,20 @@ export class Runner implements vscode.Disposable, vscode.TestCoverageProvider {
 		return fileCoverage;
 	}
 	
+	inform(data: any) {
+		const test = this.tests[data.inform];
+		
+		this.messagesFor(data).forEach(message => {
+			this.testRun.appendOutput(message.message.toString(), message.location, test);
+		});
+	}
+	
 	onData(data: any) {
 		if (data.started) {
 			this.testRun.started(this.tests[data.started]);
 		}
 		else if (data.inform) {
-			const test = this.tests[data.identity];
-			this.testRun.appendOutput(data.inform, this.locationFor(data), test);
+			this.inform(data);
 		}
 		else if (data.passed) {
 			this.testRun.passed(this.popTest(data.passed), data.duration);
