@@ -30,7 +30,7 @@ export class Runner implements vscode.Disposable, vscode.TestCoverageProvider {
 		this.workspaceFolder = workspaceFolder;
 		this.tests = tests;
 		
-		this.testRun.coverageProvider = this;
+		// this.testRun.coverageProvider = this;
 		
 		this.child = openHost(this.workspaceFolder.uri.fsPath);
 		
