@@ -4,7 +4,9 @@
 import * as vscode from 'vscode';
 import {Project} from './sus';
 
-export async function activate(context: vscode.ExtensionContext) {
+export type Projects = {[key: string]: Project};
+
+export async function activate(context: vscode.ExtensionContext): Promise<Projects> {
 	const projects = {} as {[key: string]: Project};
 	
 	async function addProject(workspaceFolder: vscode.WorkspaceFolder) {
@@ -40,9 +42,11 @@ export async function activate(context: vscode.ExtensionContext) {
 		return null;
 	}
 	
-	vscode.workspace.onDidChangeWorkspaceFolders(updateProjects);
+	context.subscriptions.push(vscode.workspace.onDidChangeWorkspaceFolders(updateProjects));
 	
 	if (vscode.workspace.workspaceFolders) {
 		vscode.workspace.workspaceFolders.forEach(addProject);
 	}
+	
+	return projects;
 }
