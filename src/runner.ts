@@ -28,20 +28,12 @@ export class Runner implements vscode.Disposable {
 		this.workspaceFolder = workspaceFolder;
 		this.tests = tests;
 		
-		// this.testRun.coverageProvider = this;
-		
 		this.child = openHost(this.workspaceFolder.uri.fsPath);
 		
 		cancellation?.onCancellationRequested(() => {
 			this.child.kill();
 		});
 		
-		this.child.on('exit', (code: number) => {
-			this.appendOutput(`Test host exited with code ${code}\r\n`);
-		});
-		this.child.on('error', (error: Error) => {
-			this.appendOutput(error.message);
-		});
 		this.child.stderr?.on('data', (data: Buffer) => {
 			this.appendOutput(data.toString());
 		});
@@ -50,13 +42,24 @@ export class Runner implements vscode.Disposable {
 		this.output = ndjson.stringify();
 		this.output.on('data', (line: string) => this.child.stdin?.write(line));
 		
+		this.child.on('error', (error: Error) => {
+			this.appendOutput(error.message);
+		});
+		
 		this.finished = new Promise((resolve, reject) => {
-			this.child.addListener('error', reject);
-			this.child.addListener('exit', resolve);
+			this.child.on('exit', (code: number) => {
+				console.log("Test host exited with code", code);
+				this.appendOutput(`Test host exited with code ${code}\r\n`);
+				if (code == 0) {
+					resolve();
+				} else {
+					reject(new Error(`Test host exited with code ${code}`));
+				}
+			});
 		});
 		
 		// Kick off the test run:
-		this.output.write({ run: Object.keys(this.tests) });
+		this.output.write({run: Object.keys(this.tests)});
 	}
 	
 	appendOutput(text: string) {
