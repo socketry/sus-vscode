@@ -2,9 +2,12 @@ import * as assert from 'assert';
 import * as vscode from 'vscode';
 //import * as myExtension from '../extension';
 
-suite('Extension Test Suite', () => {
-	test('Sample test', () => {
-		assert.strictEqual(-1, [1, 2, 3].indexOf(5));
-		assert.strictEqual(-1, [1, 2, 3].indexOf(0));
+suite('Test Extension', () => {
+	test('Tests are listed', () => {
+		// Find the "Testing" activity bar icon and click it:
+		vscode.commands.executeCommand('workbench.view.extension.test');
+		
+		// Find the "Run All Tests" button and click it:
+		vscode.commands.executeCommand('workbench.testing.action.runAllTests');
 	});
 });
