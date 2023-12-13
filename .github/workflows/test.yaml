@@ -17,15 +17,18 @@ jobs:
     
     steps:
     - uses: actions/checkout@v3
-    - uses: actions/setup-node@v1
+    - uses: actions/setup-node@v4
       with:
-        node-version: 21
         cache: 'npm'
     
     - name: Install dependencies
       timeout-minutes: 10
       run: npm ci
     
+    - name: Compile typescript
+      timeout-minutes: 10
+      run: npm run compile
+    
     - name: Run tests
       timeout-minutes: 10
-      run: npm run test
+      run: xvfb-run -a npm test
