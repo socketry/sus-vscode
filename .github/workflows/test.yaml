@@ -17,9 +17,17 @@ jobs:
     
     steps:
     - uses: actions/checkout@v3
+      with:
+        submodules: 'true'
+    
     - uses: actions/setup-node@v4
       with:
         cache: 'npm'
+    
+    - uses: ruby/setup-ruby@v1
+      with:
+        ruby-version: '3.2'
+        bundler-cache: true
     
     - name: Install dependencies
       timeout-minutes: 10
