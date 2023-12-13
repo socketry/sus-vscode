@@ -2,7 +2,7 @@
 	"name": "sus-vscode",
 	"displayName": "Sus Test Provider",
 	"description": "Ruby sus gem test provider.",
-	"version": "0.5.0",
+	"version": "0.5.1",
 	"publisher": "socketry",
 	"license": "MIT",
 	"repository": "https://github.com/ioquatix/sus-vscode",
