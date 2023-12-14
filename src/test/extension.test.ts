@@ -7,7 +7,7 @@ test('lists tests', async () => {
 	await vscode.commands.executeCommand('workbench.view.extension.test');
 	
 	// Find the "Run All Tests" button and click it:
-	// await vscode.commands.executeCommand('testing.runAll');
+	await vscode.commands.executeCommand('testing.runAll');
 	
 	const extension = vscode.extensions.getExtension('socketry.sus-vscode');
 	const projects = extension?.exports;
