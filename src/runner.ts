@@ -141,7 +141,7 @@ export class Runner implements vscode.Disposable, vscode.TestCoverageProvider {
 		for (let lineNumber = 0; lineNumber < data.counts.length; lineNumber++) {
 			const count = data.counts[lineNumber];
 			if (count != null) {
-				statementCoverage.push(new vscode.StatementCoverage(count, new vscode.Position(lineNumber, 0)));
+				statementCoverage.push(new vscode.StatementCoverage(count, new vscode.Position(lineNumber - 1, 0)));
 			}
 		}
 		
