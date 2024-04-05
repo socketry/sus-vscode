@@ -7,7 +7,7 @@
 	"license": "MIT",
 	"repository": "https://github.com/ioquatix/sus-vscode",
 	"engines": {
-		"vscode": "^1.79.0"
+		"vscode": "^1.88.0"
 	},
 	"categories": [
 		"Testing"

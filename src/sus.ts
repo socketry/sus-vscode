@@ -4,7 +4,7 @@
 import * as vscode from 'vscode';
 
 import {Tree, Node, loadTreeFromPath} from './tree';
-import {Tests, Runner} from './runner';
+import {Tests, Runner, FileCoverage} from './runner';
 
 class RunRequest {
 	workspaceFolder: vscode.WorkspaceFolder;
@@ -184,7 +184,14 @@ export class Project implements vscode.Disposable {
 		
 		this.controller.createRunProfile('Run', vscode.TestRunProfileKind.Run, this.runHandler.bind(this), true, undefined, true);
 		
-		// This doesn't work yet: https://github.com/microsoft/vscode/issues/123713#issuecomment-1830274913
-		// this.controller.createRunProfile('Coverage', vscode.TestRunProfileKind.Coverage, this.runHandler.bind(this), true, undefined, true);
+		const coverageRunProfile = this.controller.createRunProfile('Coverage', vscode.TestRunProfileKind.Coverage, this.runHandler.bind(this), true, undefined, true);
+		
+		coverageRunProfile.loadDetailedCoverage = (testRun: vscode.TestRun, fileCoverage: vscode.FileCoverage, token: vscode.CancellationToken) => {
+			if (fileCoverage instanceof FileCoverage) {
+				return Promise.resolve((fileCoverage as FileCoverage).details);
+			} else {
+				return Promise.resolve([]);
+			}
+		};
 	}
 }

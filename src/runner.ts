@@ -13,6 +13,16 @@ function openHost(root: string) {
 	return child_process.spawn("bundle", ["exec", "sus-host"], {shell: true, stdio: 'pipe', cwd: root, env});
 }
 
+export class FileCoverage extends vscode.FileCoverage {
+	details: vscode.FileCoverageDetail[];
+	
+	constructor(uri: vscode.Uri, details: vscode.FileCoverageDetail[]) {
+		const coverage = vscode.FileCoverage.fromDetails(uri, details);
+		super(uri, coverage.statementCoverage, coverage.branchCoverage, coverage.declarationCoverage);
+		this.details = details;
+	}
+}
+
 export class Runner implements vscode.Disposable {
 	testRun: vscode.TestRun;
 	workspaceFolder: vscode.WorkspaceFolder;
@@ -128,6 +138,20 @@ export class Runner implements vscode.Disposable {
 		}
 	}
 	
+	addCoverage(data: any) {
+		const uri = vscode.Uri.file(data.coverage);
+		const statementCoverage: vscode.StatementCoverage[] = [];
+		
+		for (let lineNumber = 0; lineNumber < data.counts.length; lineNumber++) {
+			const count = data.counts[lineNumber];
+			if (count != null) {
+				statementCoverage.push(new vscode.StatementCoverage(count, new vscode.Position(lineNumber - 1, 0)));
+			}
+		}
+		
+		this.testRun.addCoverage(new FileCoverage(uri, statementCoverage));
+	}
+	
 	inform(data: any) {
 		const test = this.tests[data.inform];
 		
@@ -155,6 +179,9 @@ export class Runner implements vscode.Disposable {
 		else if (data.finished) {
 			this.appendOutput(data.message);
 			this.child.stdin?.end();
+		}
+		else if (data.coverage) {
+			this.addCoverage(data);
 		}
 	}
 	
