@@ -13,15 +13,23 @@ function openHost(root: string) {
 	return child_process.spawn("bundle", ["exec", "sus-host"], {shell: true, stdio: 'pipe', cwd: root, env});
 }
 
-export class Runner implements vscode.Disposable, vscode.TestCoverageProvider {
+export class FileCoverage extends vscode.FileCoverage {
+	details: vscode.FileCoverageDetail[];
+	
+	constructor(uri: vscode.Uri, details: vscode.FileCoverageDetail[]) {
+		const coverage = vscode.FileCoverage.fromDetails(uri, details);
+		super(uri, coverage.statementCoverage, coverage.branchCoverage, coverage.declarationCoverage);
+		this.details = details;
+	}
+}
+
+export class Runner implements vscode.Disposable {
 	testRun: vscode.TestRun;
 	workspaceFolder: vscode.WorkspaceFolder;
 	tests: Tests;
 	
 	child: child_process.ChildProcess;
 	output: any;
-	
-	coverage: vscode.FileCoverage[] = [];
 	
 	finished: Promise<void>;
 	
@@ -71,10 +79,6 @@ export class Runner implements vscode.Disposable, vscode.TestCoverageProvider {
 	
 	dispose() {
 		this.child.kill();
-	}
-	
-	provideFileCoverage(token: vscode.CancellationToken) {
-		return this.coverage;
 	}
 	
 	messageBodyFor(data: any) {
@@ -145,10 +149,7 @@ export class Runner implements vscode.Disposable, vscode.TestCoverageProvider {
 			}
 		}
 		
-		const fileCoverage = vscode.FileCoverage.fromDetails(uri, statementCoverage);
-		this.coverage.push(fileCoverage);
-		
-		return fileCoverage;
+		this.testRun.addCoverage(new FileCoverage(uri, statementCoverage));
 	}
 	
 	inform(data: any) {
@@ -188,9 +189,6 @@ export class Runner implements vscode.Disposable, vscode.TestCoverageProvider {
 		this.appendOutput(`Running tests in ${this.workspaceFolder.name}...\r\n`);
 		try {
 			await this.finished;
-			
-			// Assign test coverage:
-			this.testRun.coverageProvider = this;
 		} catch (error: any) {
 			console.log("await this.finished", error);
 		} finally {
