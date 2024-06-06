@@ -5,6 +5,7 @@ import * as vscode from 'vscode';
 
 import {Tree, Node, loadTreeFromPath} from './tree';
 import {Tests, Runner, FileCoverage} from './runner';
+import { loadEnvironment } from './environment';
 
 class RunRequest {
 	workspaceFolder: vscode.WorkspaceFolder;
@@ -63,7 +64,7 @@ class RunRequest {
 			remove(this.request.exclude);
 		}
 		
-		const runner = new Runner(testRun, this.workspaceFolder, tests, this.cancellationToken);
+		const runner = await Runner.open(testRun, this.workspaceFolder, tests, this.cancellationToken);
 		
 		try {
 			await runner.run();

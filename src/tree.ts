@@ -82,6 +82,12 @@ export function loadTree(json: any) {
 
 export async function loadTreeFromPath(path: string) {
 	const data = await execute(["bundle", "exec", "sus-tree"], path);
-	const json = JSON.parse(data);
-	return loadTree(json);
+	try {
+		const json = JSON.parse(data);
+		return loadTree(json);
+	} catch (error) {
+		console.error(`Error loading tree: ${(error as Error).message}`, {data: data});
+		
+		return new Tree(new Node('error', data, true));
+	}
 }

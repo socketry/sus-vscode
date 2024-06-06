@@ -5,11 +5,11 @@ import * as vscode from 'vscode';
 import * as child_process from 'child_process';
 import * as ndjson from 'ndjson';
 
+import {loadEnvironment} from './environment';
+
 export interface Tests {[key: string]: vscode.TestItem}
 
-function openHost(root: string) {
-	const env = Object.assign({'COVERAGE': 'Quiet'}, process.env);
-	
+function openHost(root: string, env: any = {}) {
 	return child_process.spawn("bundle", ["exec", "sus-host"], {shell: true, stdio: 'pipe', cwd: root, env});
 }
 
@@ -33,16 +33,26 @@ export class Runner implements vscode.Disposable {
 	
 	finished: Promise<void>;
 	
-	constructor(testRun: vscode.TestRun, workspaceFolder: vscode.WorkspaceFolder, tests: Tests, cancellation: vscode.CancellationToken | undefined) {
+	static async open(testRun: vscode.TestRun, workspaceFolder: vscode.WorkspaceFolder, tests: Tests, cancellation: vscode.CancellationToken | undefined) {
+		const env = await loadEnvironment(workspaceFolder.uri.fsPath);
+		
+		env.COVERAGE = 'Quiet';
+		
+		const child = openHost(workspaceFolder.uri.fsPath, env);
+		
+		cancellation?.onCancellationRequested(() => {
+			child.kill();
+		});
+		
+		return new this(testRun, workspaceFolder, tests, child);
+	}
+	
+	constructor(testRun: vscode.TestRun, workspaceFolder: vscode.WorkspaceFolder, tests: Tests, child: child_process.ChildProcess) {
 		this.testRun = testRun;
 		this.workspaceFolder = workspaceFolder;
 		this.tests = tests;
 		
-		this.child = openHost(this.workspaceFolder.uri.fsPath);
-		
-		cancellation?.onCancellationRequested(() => {
-			this.child.kill();
-		});
+		this.child = child;
 		
 		this.child.stderr?.on('data', (data: Buffer) => {
 			this.appendOutput(data.toString());
