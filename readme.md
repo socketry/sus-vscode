@@ -2,6 +2,12 @@
 
 Experimental extension for showing tests in VSCode.
 
+## Usage
+
+### Environment Variables
+
+In some cases, you might want to specify a custom `BUNDLE_GEMFILE` or other environment variables that need to be set before the test suite is loaded. You can do this by defining a `.env.sus` dotenv file in the root of your project. This file will be loaded by the extension and the environment variables will be set before any commands are run.
+
 ## Debugging
 
 - Check out the code.
