@@ -2,6 +2,8 @@
 
 Experimental extension for showing tests in VSCode.
 
+![VSCode Sus Test Runner](media/screenshot.png)
+
 ## Usage
 
 ### Environment Variables
