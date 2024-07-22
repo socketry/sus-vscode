@@ -5,7 +5,7 @@
 	"version": "0.7.0",
 	"publisher": "socketry",
 	"license": "MIT",
-	"repository": "https://github.com/ioquatix/sus-vscode",
+	"repository": "https://github.com/socketry/sus-vscode",
 	"engines": {
 		"vscode": "^1.88.0"
 	},
