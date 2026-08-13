@@ -7,7 +7,8 @@
 	"license": "MIT",
 	"repository": "https://github.com/socketry/sus-vscode",
 	"engines": {
-		"vscode": "^1.88.0"
+		"node": ">=22",
+		"vscode": "^1.133.0"
 	},
 	"categories": [
 		"Testing"
@@ -28,17 +29,21 @@
 	},
 	"devDependencies": {
 		"@types/ndjson": "^2.0.1",
-		"@types/node": "^16.18.34",
-		"@typescript-eslint/eslint-plugin": "^6.7.0",
-		"@typescript-eslint/parser": "^6.7.0",
-		"@vscode/dts": "^0.4.0",
-		"@vscode/test-cli": "^0.0.4",
-		"@vscode/test-electron": "^2.3.8",
-		"eslint": "^8.26.0",
-		"typescript": "^5.3.2"
+		"@types/node": "^22.20.1",
+		"@typescript-eslint/eslint-plugin": "^8.67.0",
+		"@typescript-eslint/parser": "^8.67.0",
+		"@vscode/dts": "^0.4.1",
+		"@vscode/test-cli": "^0.0.15",
+		"@vscode/test-electron": "^3.1.0",
+		"eslint": "^8.57.1",
+		"typescript": "^5.9.3"
 	},
 	"dependencies": {
-		"dotenv": "^16.4.5",
+		"dotenv": "^16.6.1",
 		"ndjson": "^2.0.0"
+	},
+	"overrides": {
+		"diff": "^8.0.3",
+		"serialize-javascript": "^7.0.5"
 	}
 }
