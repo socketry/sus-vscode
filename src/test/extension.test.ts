@@ -9,9 +9,10 @@ import * as vscode from 'vscode';
 
 import {loadEnvironment} from '../environment';
 import {Runner, Tests, FileCoverage} from '../runner';
+import {Project} from '../sus';
 import {loadTree} from '../tree';
 
-test('lists tests', async () => {
+test('activates workspace projects', async () => {
 	// Find the "Testing" activity bar icon and click it:
 	await vscode.commands.executeCommand('workbench.view.extension.test');
 	
@@ -26,10 +27,7 @@ test('lists tests', async () => {
 		
 		assert(project);
 		assert(project.controller);
-		
-		await project.loadTree();
-		
-		assert(project.controller.items.size > 0);
+		assert(project.workspaceFolder);
 	}
 });
 
@@ -92,6 +90,40 @@ test('loads test tree from sus json', () => {
 	assert.strictEqual(file?.description, 'Example');
 	assert.strictEqual(leaf?.leaf, true);
 	assert.deepStrictEqual(visited, ['root', 'test/example.rb', 'test/example.rb:12']);
+});
+
+test('project updates test items from tree', async () => {
+	const controller = vscode.tests.createTestController('project-tree', 'Project Tree');
+	const project = new Project(createWorkspaceFolder(), controller);
+	
+	try {
+		await project.updateTree(loadTree({
+			self: ['root', 'All tests', false],
+			children: [
+				{
+					self: ['test/example.rb', 'Example', false],
+					children: [
+						{self: ['test/example.rb:12', 'passes', true]}
+					]
+				}
+			]
+		}));
+		
+		const file = controller.items.get('test/example.rb');
+		const leaf = file?.children.get('test/example.rb:12');
+		
+		assert.strictEqual(controller.items.size, 1);
+		assert.strictEqual(file?.label, 'Example');
+		assert.strictEqual(file?.uri?.fsPath, '/tmp/sus-vscode-workspace/test/example.rb');
+		assert.strictEqual(leaf?.label, 'passes');
+		assert.strictEqual(leaf?.range?.start.line, 11);
+		
+		await project.updateTree(loadTree({self: ['root', 'All tests', false], children: []}));
+		
+		assert.strictEqual(controller.items.size, 0);
+	} finally {
+		project.dispose();
+	}
 });
 
 test('runner maps host results to test run events', () => {
